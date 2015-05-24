@@ -1,0 +1,123 @@
+package protocol
+
+const (
+	VERSION = 1
+)
+
+//Type Value
+const (
+	CTRL  = 0x00
+	AUDIO = 0x10
+	FILE  = 0x20
+	VIDEO = 0x30
+	PUSH  = 0x40
+)
+
+const (
+	//request
+	CTRL_REQ_FORID = 0x0000
+	CTRL_REQ_PHONE = 0x0001
+	CTRL_REQ_LOGIN = 0x0002
+
+	CTRL_RES_FORID = 0x0100
+	CTRL_RES_PHONE = 0x0200
+	CTRL_RES_LOGIN = 0x0300
+)
+
+const (
+	REQ_TOKEN = 0x00
+	RES_TOKEN = 0x10
+)
+
+//File Number
+const (
+	FILE_REQ_SEND_FILE   = 0x2000 //clientA to server
+	FILE_REQ_SEND_STATUS = 0x2001 //clientB to server
+
+	FILE_RES_SEND_TRAN           = 0x2100 //server trans clientA reqyest to clientB
+	FILE_RES_SEND_STATUS         = 0x2102 //server response clientA
+	FILE_RES_SEND_ACTIVE_STATUS  = 0x2103 //server response clientA token
+	FILE_RES_SEND_PASSIVE_STATUS = 0x2104 //server response clientB token
+)
+
+//Audio Number
+const (
+	AUDIO_CTOS_REQ        = 0x1001
+	AUDIO_CTOS_REQ_HANGUP = 0x1007
+
+	AUDIO_CTOS_RESP_ACCEPT = 0x1002
+	AUDIO_CTOS_RESP_REFUSE = 0x1003
+
+	ADUIO_STOC_REQ              = 0x1101
+	ADUIO_STOC_REQ_HANGUP       = 0x1107
+	AUDIO_STOC_REQ_RESP_OFFLINE = 0x1102
+	ADUIO_STOC_REQ_RESP_REFUSE  = 0x1103
+	ADUIO_STOC_REQ_RESP_ACCEPT  = 0x1104
+	ADUIO_STOC_REQ_RESP_SUCCESS = 0x1105
+	AUDIO_STOC_REQ_RESP_FAILED  = 0x1106
+
+	AUDIO_STOUDS_REQ_HANGUP = 0x1207
+)
+
+//Text number
+const (
+	//client to server send text request
+	TEXT_CTOS_REQ = 0x4101
+	//server to client send text client send requese response
+	TEXT_STOC_REQ_RESP_SUCCESS = 0x4102
+	TEXT_STOC_REQ_RESP_FAILED  = 0x4112
+	//server to client send text client request
+	TEXT_STOC_REQ = 0x4103
+	//client to server send text client receive response
+	TEXT_CTOS_RESP = 0x4104
+	//server to client send client receive response
+	TEXT_STOC_RESP = 0x4105
+
+	TEXT_STOC_REQ_FAILED  = 0x4113
+	TEXT_CTOS_RESP_FAILED = 0x4114
+	TEXT_STOC_RESP_FAILED = 0x4115
+)
+
+//Audio fragment number
+const (
+	AUDIO_FRAGMENT_CTOS_REQ = 0x4201
+
+	AUDIO_FRAGMENT_STOC_REQ_RESP_SUCCESS = 0x4202
+	AUDIO_FRAGMENT_STOC_REQ_RESP_FAILED  = 0x4203
+
+	AUDIO_FRAGMENT_STOC_REQ  = 0x4204
+	AUDIO_FRAGMENT_CTOS_RESP = 0x4205
+	AUDIO_FRAGMENT_STOC_RESP = 0x4206
+
+	AUDIO_FRAGMENT_STOC_REQ_FAILED  = 0x4214
+	AUDIO_FRAGMENT_CTOS_RESP_FAILED = 0x4215
+	AUDIO_FRAGMENT_STOC_RESP_FAILED = 0x4216
+)
+
+const (
+	PHOTO_CTOS_REQ = 0x4401
+
+	PHOTO_STOC_REQ_RESP_SUCCESS = 0x4402
+	PHOTO_STOC_REQ_RESP_FAILED  = 0x4403
+
+	PHOTO_STOC_REQ  = 0x4404
+	PHOTO_CTOS_RESP = 0x4405
+	PHOTO_STOC_RESP = 0x4406
+
+	PHOTO_STOC_REQ_FAILED  = 0x4414
+	PHOTO_CTOS_RESP_FAILED = 0x4415
+	PHOTO_STOC_RESP_FAILED = 0x4416
+)
+
+const (
+	//PUSH CONST
+	TEXT           = 0x4100
+	AUDIO_FRAGMENT = 0x4200
+	PHOTO          = 0x4400
+	VIDEO_FRAGMENT = 0x4800
+	SHAKE          = 0x5100
+	MUSIC          = 0x5200
+	INVITATION     = 0x5400
+
+	USER_NOTFOUNT = 0xFFFF
+)
