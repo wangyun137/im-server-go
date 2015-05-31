@@ -53,7 +53,7 @@ func (this *TmpClients) Add(Number uint16, Uuid string, Device string, client *C
 		}
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		for {
-			token = uint8(r.Int(protocol.TOKEN_MAX))
+			token = uint8(r.Intn(protocol.TOKEN_MAX))
 			if token == 0 {
 				continue
 			}
@@ -80,8 +80,8 @@ func (this *TmpClients) Remove(Number uint16, Uuid string, Device string, Token 
 			if len(value) == 0 {
 				delete(this.TmpClients[Number][Uuid], Device)
 				if len(this.TmpClients[Number][Uuid]) == 0 {
-					delete(this.TmpClients[Number], Uid)
-					if len(this.TmpClients[Number] == 0) {
+					delete(this.TmpClients[Number], Uuid)
+					if len(this.TmpClients[Number]) == 0 {
 						delete(this.TmpClients, Number)
 					}
 				}
@@ -123,7 +123,7 @@ func (this *TmpClients) DeleteUuid(Number uint16, Uuid string) error {
 	this.Lock.Lock()
 	if value, ok := this.TmpClients[Number][Uuid]; ok {
 		delete(value, Uuid)
-		if len(this.TmpClients[Number] == 0) {
+		if len(this.TmpClients[Number]) == 0 {
 			delete(this.TmpClients, Number)
 		}
 		this.Lock.Unlock()
@@ -139,7 +139,7 @@ func (this *TmpClients) DeleteDevice(Number uint16, Uuid string, Device string) 
 
 	if _, ok := this.TmpClients[Number][Uuid][Device]; ok {
 		delete(this.TmpClients[Number][Uuid], Device)
-		if len(this.TmpClients[Number][Uuid] == 0) {
+		if len(this.TmpClients[Number][Uuid]) == 0 {
 			delete(this.TmpClients[Number], Uuid)
 			if len(this.TmpClients[Number]) == 0 {
 				delete(this.TmpClients, Number)

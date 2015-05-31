@@ -1,4 +1,4 @@
-package model
+package server
 
 import (
 	"connect-server/utils/config"

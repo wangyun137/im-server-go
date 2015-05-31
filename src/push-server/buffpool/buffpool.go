@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-type BuffPool struct{
+type BuffPool struct {
 	Services   *model.Services
 	TmpClients *model.TmpClients
 	Clients    *model.Clients
 }
 
 func init() {
-	Pool = GetBuffPool()
+	pool = GetBuffPool()
 }
 
 func NewBuffPool() *BuffPool {
@@ -33,19 +33,20 @@ func GetBuffPool() *BuffPool {
 	}
 	return pool
 }
+
 //返回token
 func (this *BuffPool) AddTmpClient(Number uint16, Uuid string, Device string, client *model.Client) uint8 {
-	return this.TmpClients.Add(Number,Uuid,Device,client)
+	return this.TmpClients.Add(Number, Uuid, Device, client)
 }
 
 func (this *BuffPool) AddTmpClient2(Number uint16, Uuid string, Device string, DeviceID uint32, oldToken uint8, client *model.Client) uint8 {
-	this.Clients.Remove(Number,Uuid,DeviceID,oldToken)
-	return this.TmpClients.Add(Number,Uuid,Device,client)
+	this.Clients.Remove(Number, Uuid, DeviceID, oldToken)
+	return this.TmpClients.Add(Number, Uuid, Device, client)
 }
 
-func (this *BuffPool) MoveTmpClient(Number uint16, Uuid string, Device string, DeviceID uint32, oldToken uint8, client *model.Clien) uint8 {
-	this.TmpClients.Remove2(Number,Uuid,Device,oldToken)
-	return this.Clients.Add(Number,Uuid,DeviceID,client)
+func (this *BuffPool) MoveTmpClient(Number uint16, Uuid string, Device string, DeviceID uint32, oldToken uint8, client *model.Client) uint8 {
+	this.TmpClients.Remove2(Number, Uuid, Device, oldToken)
+	return this.Clients.Add(Number, Uuid, DeviceID, client)
 }
 
 func (this *BuffPool) RemoveTmpClient(Number uint16, Uuid string, Device string, Token uint8) error {
@@ -96,8 +97,7 @@ func (this *BuffPool) DeleteDevice(Number uint16, Uuid string, Device uint32) er
 	return this.Clients.DeleteDevice(Number, Uuid, Device)
 }
 
-unc (this *BuffPool) GetClient(Number uint16, Uuid string, Device uint32, Token uint8) *model.Client {
-	//	fmt.Println("			*BuffPool.GeClient: ", *this.Clients)
+func (this *BuffPool) GetClient(Number uint16, Uuid string, Device uint32, Token uint8) *model.Client {
 	return this.Clients.Query(Number, Uuid, Device, Token)
 }
 

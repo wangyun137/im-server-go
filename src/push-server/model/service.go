@@ -2,11 +2,8 @@ package model
 
 import (
 	"errors"
-	"math/rand"
 	"net"
-	"push-server/protocol"
 	"sync"
-	"time"
 )
 
 type ServiceUuids map[string]*net.Conn
@@ -14,7 +11,7 @@ type ServiceNumbers map[uint16]ServiceUuids
 
 type Services struct {
 	Services ServiceNumbers
-	Lcok     sync.RWMutex
+	Lock     sync.RWMutex
 }
 
 func NewServices() *Services {

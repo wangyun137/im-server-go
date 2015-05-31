@@ -3,26 +3,19 @@ package main
 import (
 	"fmt"
 	"push-server/buffpool"
-	"push-server/model"
-	"push-server/utils"
+	"push-server/server"
 	"runtime"
 	"time"
 )
 
 func main() {
-	pusherServer := model.PushServer{}
+	pusherServer := server.PushServer{}
 	err := pusherServer.ReadConf("conf/push-server.conf")
 	if err != nil {
 		fmt.Println("PushServer Error:" + err.Error())
 		return
 	}
 	runtime.GOMAXPROCS(pusherServer.GoMaxProcs)
-
-	if utils.GetRunWithSnode().Flag {
-		fmt.Println("\n", time.Now().String(), "\tPush Server will run with snode", "\n")
-	} else {
-		fmt.Println("\n", time.Now().String(), "\tPush Server will run without snode", "\n")
-	}
 
 	connect, err := pusherServer.Init()
 	if err != nil {

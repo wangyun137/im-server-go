@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"push-server/buffpool"
 	"push-server/protocol"
-	"push-server/utils"
-	snode_component "sudo-snode/component"
+	snode_component "snode-server/component"
 )
 
 type UnregisterComponent struct {
@@ -129,34 +128,33 @@ func (this *UnregisterComponent) unregisterService(buffPool *buffpool.BuffPool, 
 }
 
 func (this *UnregisterComponent) unregisterClient(buffPool *buffpool.BuffPool, msg *protocol.Message) error {
-	fmt.Println("in UnregisterComponent.unregisterClient")
 	if buffPool == nil || msg == nil {
-		err := errors.New("component: UnregisterComponent.unregisterClient() failed, invalid argument")
+		err := errors.New("UnregisterComponent.unregisterClient() Error: invalid argument")
 		fmt.Println(err.Error())
 		return err
 	}
-	clientConn := buffPool.GetClient(msg.Number, msg.UserId, msg.DeviceId, msg.Token)
+	clientConn := buffPool.GetClient(msg.Number, msg.UserUuid, msg.DeviceId, msg.Token)
 	if clientConn == nil {
 		return nil
 	}
 
 	//only remove conn from connPool, but do not disconnect this connection
-	err := buffPool.RemoveClient(msg.Number, msg.UserId, msg.DeviceId, msg.Token)
+	err := buffPool.RemoveClient(msg.Number, msg.UserUuid, msg.DeviceId, msg.Token)
 	(*clientConn.Conn).Close()
 	if err != nil {
-		err = errors.New("component: UnregisterComponent.unregisterClient() failed, " + err.Error())
+		err = errors.New("UnregisterComponent.unregisterClient() Error: " + err.Error())
 		fmt.Println(err.Error())
 		//send failed response to client
-		resp, err2 := protocol.NewMessage(define.VERSION, define.MT_ERROR, define.PT_PUSHSERVER, msg.Token, msg.Number, uint16(0),
-			P_UID, msg.UserId, msg.DeviceId, nil)
+		resp, err2 := protocol.NewMessage(protocol.VERSION, protocol.MT_ERROR, protocol.PT_PUSHSERVER, msg.Token, msg.Number, uint16(0),
+			P_UID, msg.UserUuid, msg.DeviceId, nil)
 		if err2 != nil {
-			err2 = errors.New("component: UnregisterComponent.unregisterClient() failed, " + err2.Error())
+			err2 = errors.New("UnregisterComponent.unregisterClient() Error:" + err2.Error())
 			fmt.Println(err2.Error())
 			return err2
 		}
 		err3 := sendResponse(clientConn.Conn, resp)
 		if err3 != nil {
-			err3 = errors.New("component: UnregisterComponent.unregisterClient() failed, " + err3.Error())
+			err3 = errors.New("UnregisterComponent.unregisterClient() Error:, " + err3.Error())
 			fmt.Println(err3.Error())
 			return err3
 		}
@@ -164,14 +162,14 @@ func (this *UnregisterComponent) unregisterClient(buffPool *buffpool.BuffPool, m
 	}
 
 	//offline broadcast
-	err = this.offlineBroadcast(buffPool, msg.UserId, msg.DeviceId)
+	err = this.offlineBroadcast(buffPool, msg.UserUuid, msg.DeviceId)
 	if err != nil {
-		err = errors.New("component: UnregisterComponent.unregisterClient() error, offlineBroadcast send failed, " + err.Error())
+		err = errors.New("UnregisterComponent.unregisterClient() Error: offlineBroadcast send failed, " + err.Error())
 		fmt.Println(err.Error())
 	}
 
-	resp, err := protocol.NewMessage(define.VERSION, define.MT_UNREGISTER, define.PT_PUSHSERVER, msg.Token, msg.Number, uint16(0),
-		P_UID, msg.UserId, msg.DeviceId, nil)
+	resp, err := protocol.NewMessage(protocol.VERSION, protocol.MT_UNREGISTER, protocol.PT_PUSHSERVER, msg.Token, msg.Number, uint16(0),
+		P_UID, msg.UserUuid, msg.DeviceId, nil)
 	if err != nil {
 		err = errors.New("UnregisterComponent.unregisterClient() Error: conn is removed from BuffPool, but can not send response to service" + err.Error())
 		fmt.Println(err.Error())
@@ -187,7 +185,7 @@ func (this *UnregisterComponent) unregisterClient(buffPool *buffpool.BuffPool, m
 
 func (this *UnregisterComponent) offlineBroadcast(buffPool *buffpool.BuffPool, userUuid string, devID uint32) error {
 
-	if utils.GetRunWithSnode().Flag {
+	if GetRunWithSnode().Flag {
 		snode_component.GetNodeComponent().Logout(userID, devID)
 		snode_component.GetNodeComponent().DecUsersNumber()
 		snode_component.GetNodeComponent().DecConnNumber()

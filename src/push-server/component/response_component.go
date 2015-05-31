@@ -1,7 +1,7 @@
 package component
 
 import (
-	"account-server/structure"
+	// "account-server/structure"
 	"errors"
 	"fmt"
 	"push-server/model"
@@ -83,11 +83,11 @@ func (this *ResponseComponent) HandleRegisterClientCallback(msgData []byte) erro
 	return nil
 }
 
-func (this *ResponseComponent) DecodeMsg(data []byte) (*structure.QueryDeviceResponse, error) {
-	responseMsg := structure.QueryDeviceResponse{}
-	if err := responseMsg.Decode(data); err != nil {
-		fmt.Println(err.Error())
-		return nil, err
-	}
-	return &responseMsg, nil
-}
+// func (this *ResponseComponent) DecodeMsg(data []byte) (*structure.QueryDeviceResponse, error) {
+// 	responseMsg := structure.QueryDeviceResponse{}
+// 	if err := responseMsg.Decode(data); err != nil {
+// 		fmt.Println(err.Error())
+// 		return nil, err
+// 	}
+// 	return &responseMsg, nil
+// }

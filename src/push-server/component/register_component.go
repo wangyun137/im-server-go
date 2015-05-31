@@ -8,12 +8,11 @@ import (
 	"push-server/buffpool"
 	"push-server/model"
 	"push-server/protocol"
-	"push-server/utils"
 	snode_component "snode-server/component"
 	"time"
 	"tree-server/define"
 	"tree-server/structure"
-	account_structure "account-server/structure"
+	// account_structure "account-server/structure"
 )
 
 const (
@@ -169,25 +168,25 @@ func (this *RegisterComponent) dispatch(conn *net.Conn, buffPool *buffpool.BuffP
 	return nil
 }
 
-func (this *RegisterComponent) handleService(buffPool *buffpool.BuffPool,message *protocol.Message,conn *net.Conn) {
+func (this *RegisterComponent) handleService(buffPool *buffpool.BuffPool, message *protocol.Message, conn *net.Conn) {
 	if buffPool == nil || message == nil || conn == nil {
 		err := errors.New("RegisterComponent handleService Error: the argument is nil")
 		return err
 	}
-	err := buffPool.AddService(message.Number,message.UserUuid,conn)
+	err := buffPool.AddService(message.Number, message.UserUuid, conn)
 	if err != nil {
-		err  = fmt.Errorf("RegisterCompoennt handleService Error: %v", err)
+		err = fmt.Errorf("RegisterCompoennt handleService Error: %v", err)
 		return err
 	}
-	responseMessage, err := protocol.NewMessage(protocol.VERSION,protocol.MT_REGISTER,protocol.PT_PUSHSERVER,0,message.Number,0 P_UID,
+	responseMessage, err := protocol.NewMessage(protocol.VERSION, protocol.MT_REGISTER, protocol.PT_PUSHSERVER, 0, message.Number, 0, P_UID,
 		message.UserUuid, 0, nil)
 	if err != nil {
 		err = fmt.Errorf("RegisterComponent handleService Error:%v", err)
 		return err
 	}
-	GetDispatcherOutComponent().NPushBack(responseMessage,false)
+	GetDispatcherOutComponent().NPushBack(responseMessage, false)
 
-	if utils.GetRunWithSnode().Flag {
+	if GetRunWithSnode().Flag {
 		onlineInfo := structure.ClientOnlineInfo{
 			PushID:   this.PushID,
 			ParentID: this.PushID,
@@ -200,24 +199,24 @@ func (this *RegisterComponent) handleService(buffPool *buffpool.BuffPool,message
 		snode_component.GetNodeComponent().Forward(stree_define.ONLINE, msg.UserId, 0, data) //added for QueryUser
 	}
 
-	go this.listenService(conn,buffPool,message.Number,message.UserUuid)
+	go this.listenService(conn, buffPool, message.Number, message.UserUuid)
 	return nil
 }
 
-func (this *RegisterComponent) listenService(conn *net.Conn,buffPool *buffpool.BuffPool,number uint16,userUuid string) error {
+func (this *RegisterComponent) listenService(conn *net.Conn, buffPool *buffpool.BuffPool, number uint16, userUuid string) error {
 	if buffPool == nil {
 		err := errors.New("RegisterComponent listenService Error: buffpool is nil")
 		return err
 	}
 	if conn == nil {
 		err := errors.New("RegisterComponent listenService Error: the conn is nil")
-		if utils.GetRunWithSnode().Flag {
+		if GetRunWithSnode().Flag {
 			this.ServiceOffline(userUuid)
 		}
 
-		err = buffPool.DeleteService(number,userUuid)
+		err = buffPool.DeleteService(number, userUuid)
 		if err != nil {
-			err = fmt.Errorf("RegisterComponent listenService Error:%v",err)
+			err = fmt.Errorf("RegisterComponent listenService Error:%v", err)
 			return err
 		}
 		return err
@@ -239,16 +238,16 @@ func (this *RegisterComponent) listenService(conn *net.Conn,buffPool *buffpool.B
 		if err != nil && err != io.EOF && conn != nil {
 			fmt.Println("RegisterComponent listenService Error: read message fail")
 			continue
-		} else if err != nil && (err == io.EOF | conn == nil) {
+		} else if err != nil && (err == io.EOF|conn == nil) {
 			err = errors.New("RegisterComponent listenService Error:the connection is invalid")
-			err2 := buffPool.DeleteService(number,userUuid)
+			err2 := buffPool.DeleteService(number, userUuid)
 
-			if utils.GetRunWithSnode().Flag {
+			if GetRunWithSnode().Flag {
 				this.ServiceOffline(userUuid)
 			}
 
 			if err2 != nil {
-				err2 = fmt.Errorf("RegisterComponent listenService Error: %v",err)
+				err2 = fmt.Errorf("RegisterComponent listenService Error: %v", err)
 				fmt.Println(err2.Error())
 				return err2
 			}
@@ -259,15 +258,14 @@ func (this *RegisterComponent) listenService(conn *net.Conn,buffPool *buffpool.B
 		if message == nil {
 			continue
 		}
-		dispatcher.NPushBack(message,true)
+		dispatcher.NPushBack(message, true)
 	}
 	return nil
 }
 
 func (this *RegisterComponent) ServiceOffline(userUuid string) {
-	snode_component.GetNodeComponent().Forward(define.OFFLINE,userUuid,0,nil)
+	snode_component.GetNodeComponent().Forward(define.OFFLINE, userUuid, 0, nil)
 }
-
 
 func (this *RegisterComponent) handleClient(buffPool *buffpool.BuffPool, queryComponent *QueryComponent,
 	message *protocol.Message, conn *net.Conn) {
@@ -275,17 +273,17 @@ func (this *RegisterComponent) handleClient(buffPool *buffpool.BuffPool, queryCo
 		err := errors.New("RegisterComponent handleClient() Error : invaild argument")
 		return err
 	}
-	if !this.checkAccountServer(buffPool,message,conn) {
+	if !this.checkAccountServer(buffPool, message, conn) {
 		err := errors.New("RegisterCompoennt handleClient() Error: the account server is not register")
 		return err
 	}
-	clientConn := model.Client{Conn:conn,Status:false}
+	clientConn := model.Client{Conn: conn, Status: false}
 	var token uint8
 	if message.Token == 0 {
-		token = buffPool.AddTmpClient(message.Number,message.UserUuid,string(message.Data),&clientConn)
+		token = buffPool.AddTmpClient(message.Number, message.UserUuid, string(message.Data), &clientConn)
 	} else {
-		token = buffPool.AddTmpClient2(message.Number,message.UserUuid,string(message.Data),message.DeviceId,
-			message.Token,&clientConn)
+		token = buffPool.AddTmpClient2(message.Number, message.UserUuid, string(message.Data), message.DeviceId,
+			message.Token, &clientConn)
 	}
 
 	if token == 0 {
@@ -294,10 +292,10 @@ func (this *RegisterComponent) handleClient(buffPool *buffpool.BuffPool, queryCo
 	}
 
 	queryInfo := protocol.QueryInfo{
-		Token: 			token,
-		Numebr: 		message.Number,
-		UserUuid: 		message.UserUuid,
-		DeviceNumber:	string(message.Data),
+		Token:        token,
+		Numebr:       message.Number,
+		UserUuid:     message.UserUuid,
+		DeviceNumber: string(message.Data),
 	}
 
 	err := queryComponent.AcceptInfo(queryInfo)
@@ -313,10 +311,10 @@ func (this *RegisterComponent) checkAccountServer(buffPool *buffpool.BuffPool, m
 		fmt.Println("RegisterComponent checkAccountServer() Error: invalid argument")
 		return false
 	}
-	connService  := buffPool.GetService(protocol.N_ACCOUNT_SYS)
+	connService := buffPool.GetService(protocol.N_ACCOUNT_SYS)
 	if connService == nil {
 		fmt.Println("RegisterComponent checkAccountServer() Error: can not get the account_sys server")
-		response,_ := protocol.NewMessage(protocol.VERSION, protoocl.MT_ERROR, protocol.PT_PUSHSERVER, message.Token, message.Number, 0, P_UID,
+		response, _ := protocol.NewMessage(protocol.VERSION, protoocl.MT_ERROR, protocol.PT_PUSHSERVER, message.Token, message.Number, 0, P_UID,
 			message.UserUuid, 0, nil)
 		err := sendResponse(conn, response)
 		if err != nil {
@@ -328,71 +326,70 @@ func (this *RegisterComponent) checkAccountServer(buffPool *buffpool.BuffPool, m
 	return true
 }
 
-func (this *RegisterComponent) RegisterClientCallback(response *account_structure.QueryDeviceResponse) error {
-	if response == nil {
-		err := errors.New("RegisterComponent RegisterClientCallback Error: the argument is nil")
-		return er
-	}
+// func (this *RegisterComponent) RegisterClientCallback(response *account_structure.QueryDeviceResponse) error {
+// 	if response == nil {
+// 		err := errors.New("RegisterComponent RegisterClientCallback Error: the argument is nil")
+// 		return er
+// 	}
 
-	var buffPool *buffpool.BuffPool
-	for {
-		buffPool = buffpool.GetBuffPool()
-		if buffPool != nil {
-			break
-		} else {
-			fmt.Println("RegisterComponent RegisterClientCallback Error: can not get buffpool")
-		}
-	}
-	clientConn, err := this.checkQueryResponse(buffPool,response)
-	if err != nil || clientConn == nil {
-		fmt.Println("RegisterComponent RegisterClientCallback Error:can not get the account response")
-		return err
-	}
-	newToken := buffPool.MoveTmpClient(response.Number,response.UserUuid, response.DeviceNumber, 
-		resposne.DeviceID, response.Token, clientConn)
-	if newToken == 0 {
-		err = errors.New("RegisterComponent RegisterClientCallback Error:can not move client")
-		fmt.Println(err.Error())
-		err2 := this.sendFailedRegisterResponse(clientConn.Conn,response.Number,response.UserUuid)
-		if err2 != nil {
-			fmt.Println("RegisterComponent RegisterClientCallback Error: " + err2.Error())
-		}
+// 	var buffPool *buffpool.BuffPool
+// 	for {
+// 		buffPool = buffpool.GetBuffPool()
+// 		if buffPool != nil {
+// 			break
+// 		} else {
+// 			fmt.Println("RegisterComponent RegisterClientCallback Error: can not get buffpool")
+// 		}
+// 	}
+// 	clientConn, err := this.checkQueryResponse(buffPool, response)
+// 	if err != nil || clientConn == nil {
+// 		fmt.Println("RegisterComponent RegisterClientCallback Error:can not get the account response")
+// 		return err
+// 	}
+// 	newToken := buffPool.MoveTmpClient(response.Number, response.UserUuid, response.DeviceNumber,
+// 		resposne.DeviceID, response.Token, clientConn)
+// 	if newToken == 0 {
+// 		err = errors.New("RegisterComponent RegisterClientCallback Error:can not move client")
+// 		fmt.Println(err.Error())
+// 		err2 := this.sendFailedRegisterResponse(clientConn.Conn, response.Number, response.UserUuid)
+// 		if err2 != nil {
+// 			fmt.Println("RegisterComponent RegisterClientCallback Error: " + err2.Error())
+// 		}
 
-		return err
-	}
+// 		return err
+// 	}
 
-	message,err := protocol.NewMessage(protocol.VERSION,protocol.MT_REGISTER, protocol.PT_PUSHSERVER, newToken, response.Number, 0,
-		P_UID, response.UserUuid, response.DeviceID, nil)
-	if err != nil {
-		err := errors.New("RegisterComponent RegisterClientCallback Error:" + err.Error())
-		fmt.Println(err.Error())
-		err2 := this.sendFailedRegisterResponse(clientConn.Conn, response.Number, response.UserUuid)
-		if err2 != nil {
-			fmt.Println("RegisterComponent RegisterClientCallback Error:" + err2.Error())
-		}
-		err3 := buffPool.RemoveClient(response.Number, response.UserID, response.DeviceID, newToken)
-		(*clientConn.Conn).Close()
-		if err3 != nil {
-			fmt.Println("RegisterComponent RegisterClientCallback Error:" + err3.Error())
-		}
+// 	message, err := protocol.NewMessage(protocol.VERSION, protocol.MT_REGISTER, protocol.PT_PUSHSERVER, newToken, response.Number, 0,
+// 		P_UID, response.UserUuid, response.DeviceID, nil)
+// 	if err != nil {
+// 		err := errors.New("RegisterComponent RegisterClientCallback Error:" + err.Error())
+// 		fmt.Println(err.Error())
+// 		err2 := this.sendFailedRegisterResponse(clientConn.Conn, response.Number, response.UserUuid)
+// 		if err2 != nil {
+// 			fmt.Println("RegisterComponent RegisterClientCallback Error:" + err2.Error())
+// 		}
+// 		err3 := buffPool.RemoveClient(response.Number, response.UserID, response.DeviceID, newToken)
+// 		(*clientConn.Conn).Close()
+// 		if err3 != nil {
+// 			fmt.Println("RegisterComponent RegisterClientCallback Error:" + err3.Error())
+// 		}
 
-		return err
-	}
-	dispatcherOutComponent := GetDispactherOutComponent()
-	dispatcherOutComponent.NPushBack(message,false)
+// 		return err
+// 	}
+// 	dispatcherOutComponent := GetDispactherOutComponent()
+// 	dispatcherOutComponent.NPushBack(message, false)
 
-	go listenClient(clientConn.Conn, buffPool, response.Number, response.UserUuid, response.DeviceID, newToken)
-	err = this.onlineBroadcast(buffPool, dispatcherOutComponent, response.UserID, response.DeviceID)
-	if err != nil {
-		err := fmt.Errorf("RegisterComponent onlineBroadcast() Error: can not broadcast to other server, " + err.Error())
-		return err
-	}
-	if !utils.GetRunWithSnode().Flag {
-		GetCacheComponent.SendCached(response.UserUuid,response.DeviceID)
-	}
-	return nil
-}
-
+// 	go listenClient(clientConn.Conn, buffPool, response.Number, response.UserUuid, response.DeviceID, newToken)
+// 	err = this.onlineBroadcast(buffPool, dispatcherOutComponent, response.UserID, response.DeviceID)
+// 	if err != nil {
+// 		err := fmt.Errorf("RegisterComponent onlineBroadcast() Error: can not broadcast to other server, " + err.Error())
+// 		return err
+// 	}
+// 	if !GetRunWithSnode().Flag {
+// 		GetCacheComponent.SendCached(response.UserUuid, response.DeviceID)
+// 	}
+// 	return nil
+// }
 
 func (this *RegisterComponent) sendFailedRegisterResponse(conn *net.Conn, num uint16, userUuid string) error {
 	response, err := protocol.NewMessage(protocol.VERSION, protocol.MT_ERROR, protocol.PT_PUSHSERVER, 0, num, 0,
@@ -410,10 +407,9 @@ func (this *RegisterComponent) sendFailedRegisterResponse(conn *net.Conn, num ui
 	return nil
 }
 
-
 func (this *RegisterComponent) onlineBroadcast(buffPool *buffpool.BuffPool, dispatcherOut *DispatcherOutComponent, userUuid string, deviceID uint32) error {
 
-	if utils.GetRunWithSnode().Flag {
+	if GetRunWithSnode().Flag {
 		onlineInfo := structure.ClientOnlineInfo{
 			PushID:   this.PushID,
 			ParentID: this.PushID,
@@ -458,40 +454,39 @@ func (this *RegisterComponent) onlineBroadcast(buffPool *buffpool.BuffPool, disp
 	return nil
 }
 
+// func (this *RegisterComponent) checkQueryResponse(buffPool *buffpool.BuffPool, response *account_structure.QueryDeviceResponse) (*model.Client, error) {
+// 	if buffPool == nil || response == nil {
+// 		err := errors.New("RegisterComponnet checkQueryResponse() Error: invalid argument")
+// 		return nil, err
+// 	}
 
-func (this *RegisterComponent) checkQueryResponse(buffPool *buffpool.BuffPool, response *account_structure.QueryDeviceResponse) (*model.Client, error) {
-	if buffPool == nil || response == nil {
-		err := errors.New("RegisterComponnet checkQueryResponse() Error: invalid argument")
-		return nil, err
-	}
+// 	clientConn := buffPool.GetTmpClient(response.Number, response.UserID, response.DeviceNumber, response.Token)
+// 	if clientConn == nil || clientConn.Conn == nil {
+// 		err := errors.New("RegisterComponent checkQueryResponse() Error: can not get client conn from buffPool")
+// 		return nil, err
+// 	}
 
-	clientConn := buffPool.GetTmpClient(response.Number, response.UserID, response.DeviceNumber, response.Token)
-	if clientConn == nil || clientConn.Conn == nil {
-		err := errors.New("RegisterComponent checkQueryResponse() Error: can not get client conn from buffPool")
-		return nil, err
-	}
+// 	if response.Exist == 0 {
+// 		err := errors.New("RegisterCompoennt checkQueryResponse Error: did not pass the authorization")
 
-	if response.Exist == 0 {
-		err := errors.New("RegisterCompoennt checkQueryResponse Error: did not pass the authorization")
+// 		resp, _ := protocol.NewMessage(protocol.VERSION, protocol.MT_ERROR, protocol.PT_PUSHSERVER, response.Token, response.Number, 0, P_UID,
+// 			response.UserUuid, response.DeviceID, nil)
+// 		err = sendResponse(clientConn.Conn, resp)
+// 		if err != nil {
+// 			err = errors.New("RegisterCompoennt checkQueryResponse Error: Can not send register response, " + err.Error())
+// 			fmt.Println(err.Error())
+// 		}
 
-		resp, _ := protocol.NewMessage(protocol.VERSION, protocol.MT_ERROR, protocol.PT_PUSHSERVER, response.Token, response.Number, 0, P_UID,
-			response.UserUuid, response.DeviceID, nil)
-		err = sendResponse(clientConn.Conn, resp)
-		if err != nil {
-			err = errors.New("RegisterCompoennt checkQueryResponse Error: Can not send register response, " + err.Error())
-			fmt.Println(err.Error())
-		}
-
-		err2 := buffPool.RemoveTmpClient(response.Number, response.UserID, response.DeviceNumber, response.Token)
-		(*clientConn.Conn).Close()
-		if err2 != nil {
-			err2 := errors.New("RegisterCompoennt checkQueryResponse Error: can not remove client conn from tmp buffpool, " + err2.Error())
-			return nil, err2
-		}
-		return nil, err
-	}
-	return clientConn, nil
-}
+// 		err2 := buffPool.RemoveTmpClient(response.Number, response.UserID, response.DeviceNumber, response.Token)
+// 		(*clientConn.Conn).Close()
+// 		if err2 != nil {
+// 			err2 := errors.New("RegisterCompoennt checkQueryResponse Error: can not remove client conn from tmp buffpool, " + err2.Error())
+// 			return nil, err2
+// 		}
+// 		return nil, err
+// 	}
+// 	return clientConn, nil
+// }
 
 func (this *RegisterComponent) listenClient(conn *net.Conn, buffPool *buffpool.BuffPool, number uint16, userUuid string, deviceID uint32, token uint8) error {
 	if buffPool == nil {
@@ -553,7 +548,7 @@ func (this *RegisterComponent) listenClient(conn *net.Conn, buffPool *buffpool.B
 					fmt.Println("RegisterComponent listenClient() Error:one client disconnected but offlineBroadcast send failed")
 				}
 			}
-			
+
 			return err
 		}
 		//push to DispatcherQueue
@@ -630,7 +625,7 @@ func (this *RegisterComponent) read(buffer []byte, conn *net.Conn) error {
 	return nil
 }
 
-func sendResponse(conn *net.Conn, message *protocl.Message) error {
+func sendResponse(conn *net.Conn, message *protocol.Message) error {
 	if conn == nil || message == nil {
 		err := errors.New("RegisterComponent sendResponse Error : the argument is invalid")
 		return err

@@ -1,8 +1,8 @@
 package component
 
 import (
-	"account-server/model"
-	account "account-server/protocol"
+	// "account-server/model"
+	// account "account-server/protocol"
 	"errors"
 	"fmt"
 	push_model "push-server/model"
@@ -45,18 +45,26 @@ func (this *QueryComponent) HandleQueryInfo() {
 	for {
 		info := <-data
 
+		Msg, err := this.InitMsg(info)
+		if err != nil || Msg == nil {
+			continue
+		}
+
+		if err = dispatch.NPushBack(Msg, false); err != nil {
+			continue
+		}
 	}
 }
 
-func (this *QueryComponent) InitMessage(info *QueryInfo) (*protocol.Message, error) {
+func (this *QueryComponent) InitMessage(info *push_model.QueryInfo) (*Message, error) {
 	queryRequest := model.QueryDeviceRequest{
-		model.QueryInfo{
-			model.Request{account.QUERYDEVICE_REQ},
-			info.UserUuid,
-		},
-		info.DeviceNumber,
-		info.Token,
-		info.Number,
+	// model.QueryInfo{
+	// 	model.Request{account.QUERYDEVICE_REQ},
+	// 	info.UserUuid,
+	// },
+	// info.DeviceNumber,
+	// info.Token,
+	// info.Number,
 	}
 	packet, err := queryRequest.Encode()
 	if err != nil {
@@ -74,7 +82,7 @@ func (this *QueryComponent) InitMessage(info *QueryInfo) (*protocol.Message, err
 	return message, nil
 }
 
-func (this *QueryComponent) AcceptInfo(info *QueryInfo) error {
+func (this *QueryComponent) AcceptInfo(info *push_model.QueryInfo) error {
 	if info != nil {
 		data <- info
 	} else {

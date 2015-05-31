@@ -1,4 +1,4 @@
-package model
+package component
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 )
 
 type MessagePacket struct {
-	Message *protocl.Message
+	Message *protocol.Message
 	Flag    bool
 }
 
@@ -21,10 +21,10 @@ type MessagePacket struct {
  */
 
 type PriorityQueue struct {
-	NormalQueue       chan *MsgPacket
+	NormalQueue       chan *MessagePacket
 	NormalQueueLen    int
 	NormalQueueSize   int
-	EmergentQueue     chan *MsgPacket
+	EmergentQueue     chan *MessagePacket
 	EmergentQueueLen  int
 	EmergentQueueSize int
 	Level             int

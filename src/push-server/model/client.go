@@ -50,7 +50,7 @@ func (this *Clients) Add(Number uint16, Uuid string, DeviceId uint32, client *Cl
 
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		for {
-			token = uint8(r.Intn(define.TOKEN_MAX))
+			token = uint8(r.Intn(protocol.TOKEN_MAX))
 			if token == 0 {
 				continue
 			}
@@ -99,7 +99,7 @@ func (this *Clients) DeleteUuid(Number uint16, Uuid string) error {
 
 	if _, ok := this.Clients[Number][Uuid]; ok {
 		delete(this.Clients[Number], Uuid)
-		if len(this.Clients[Number] == 0) {
+		if len(this.Clients[Number]) == 0 {
 			delete(this.Clients, Number)
 		}
 		this.Lock.Unlock()
@@ -116,7 +116,7 @@ func (this *Clients) DeleteDevice(Number uint16, Uuid string, DeviceId uint32) e
 		delete(this.Clients[Number][Uuid], DeviceId)
 		if len(this.Clients[Number][Uuid]) == 0 {
 			delete(this.Clients[Number], Uuid)
-			if len(this.Clients[Number] == 0) {
+			if len(this.Clients[Number]) == 0 {
 				delete(this.Clients, Number)
 			}
 		}
@@ -128,12 +128,27 @@ func (this *Clients) DeleteDevice(Number uint16, Uuid string, DeviceId uint32) e
 	return errors.New("Clients DeleteDevice Error : do not have the DeviceId")
 }
 
+func (this *Clients) Query(Number uint16, Uuid string, Device uint32, token uint8) *Client {
+
+	this.Lock.Lock()
+	for k, v := range this.Clients {
+		if Number&k != 0 {
+			if value, ok := v[Uuid][Device][token]; ok {
+				this.Lock.Unlock()
+				return value
+			}
+		}
+	}
+
+	this.Lock.Unlock()
+	return nil
+}
 func (this *Clients) UpdateStatus(Number uint16, Uuid string, DeviceId uint32, token uint8, Status bool) error {
 	this.Lock.Lock()
 
 	if _, ok := this.Clients[Number][Uuid][DeviceId][token]; ok {
 		this.Clients[Number][Uuid][DeviceId][token].Status = Status
-		this.Clients[Number][Uuid][DeviceID][token].Time = time.Now()
+		this.Clients[Number][Uuid][DeviceId][token].Time = time.Now()
 		this.Lock.Unlock()
 		return nil
 	}
@@ -197,5 +212,5 @@ func (this *Clients) QueryForDeviceId(Number uint16, Uuid string, DeviceId uint3
 	}
 
 	this.Lock.Unlock()
-	return client
+	return clients
 }
