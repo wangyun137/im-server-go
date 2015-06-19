@@ -6,6 +6,8 @@ import (
 	"fmt"
 )
 
+const MESSAGE_LEN = 44
+
 //At least 44 bytes
 type Message struct {
 	Version  uint8

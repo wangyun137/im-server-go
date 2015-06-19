@@ -7,6 +7,7 @@ import (
 	"push-server/buffpool"
 	"push-server/model"
 	"push-server/protocol"
+	"push-server/utils"
 	snode_component "snode-server/component"
 	"time"
 	stree_define "tree-server/define"
@@ -92,9 +93,8 @@ func (this *DispatcherOutComponent) dispatch(msg *protocol.Message, flag bool, b
 		this.handleMTRegister(msg, buffPool, respComp)
 	case protocol.MT_PUSH:
 		this.handleMTPush(msg, buffPool, respComp)
-
 	case protocol.MT_PUBLISH, protocol.MT_PUSH_WITH_RESPONSE: //only PUBLISH type may forward a message
-		if GetRunWithSnode().Flag {
+		if utils.GetRunWithSnode().Flag {
 			this.handleMTPublish(msg, flag, buffPool)
 		} else {
 			cached := uint16(1 << 15)
@@ -114,7 +114,7 @@ func (this *DispatcherOutComponent) dispatch(msg *protocol.Message, flag bool, b
 	case protocol.MT_KEEP_ALIVE:
 		this.handleKeepAlive(msg)
 	case protocol.MT_QUERY_USER_RESPONSE:
-		if GetRunWithSnode().Flag {
+		if utils.GetRunWithSnode().Flag {
 			this.sendToService2(msg, flag, buffPool)
 		}
 	}

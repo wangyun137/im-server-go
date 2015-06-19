@@ -45,7 +45,7 @@ func (this *QueryComponent) HandleQueryInfo() {
 	for {
 		info := <-data
 
-		Msg, err := this.InitMsg(info)
+		Msg, err := this.InitMessage(info)
 		if err != nil || Msg == nil {
 			continue
 		}
@@ -72,7 +72,7 @@ func (this *QueryComponent) InitMessage(info *push_model.QueryInfo) (*Message, e
 		return nil, err
 	}
 
-	message, err := protocol.NewMessage(VERSION, MT_PUSH < PY_PUSHSERVER,
+	message, err := protocol.NewMessage(VERSION, MT_PUSH, PT_PUSHSERVER,
 		TOKEN, N_ACCOUNT_SYS, uint16(len(packet)), USER_UUID, DEST_UUID, DEVICE_ID, packet)
 	if err != nil {
 		err = fmt.Errorf("QueryComponent InitMessage Error : %v", err)

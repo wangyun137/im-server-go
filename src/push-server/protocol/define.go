@@ -13,9 +13,9 @@ const (
 	MT_UNREGISTER         = 0x20
 	MT_PUSH               = 0x30 // client,service contact to push server
 	MT_PUBLISH            = 0x40 // client,service contact to each other by push server
-	MT_BROADCAST_ONLINE   = 0x50 //push server send message to service if someone is online
-	MT_BROADCAST_OFFLINE  = 0x60 //push server send message to service if someone is offline
-	MT_PUSH_WITH_RESPONSE = 0x70 // push server send a message to client and wait the response from client
+	MT_BROADCAST_ONLINE   = 0x50 //	push server send message to service if someone is online
+	MT_BROADCAST_OFFLINE  = 0x60 //	push server send message to service if someone is offline
+	MT_PUSH_WITH_RESPONSE = 0x70 // push server send message to client and wait the response from client
 	MT_KEEP_ALIVE         = 0x80
 
 	MT_QUERY_USER          = 0x90
